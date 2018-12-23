@@ -85,12 +85,18 @@ defmodule Soap.Wsdl do
 
   @spec get_complex_types(String.t(), String.t(), String.t()) :: list()
   def get_complex_types(wsdl, namespace, protocol_ns) do
-    xpath(
-      wsdl,
-      ~x"//#{ns("types", protocol_ns)}/#{ns("schema", namespace)}/#{ns("element", namespace)}"l,
-      name: ~x"./@name"s,
-      type: ~x"./@type"s
-    )
+    case xpath(wsdl, ~x"//#{ns("types", protocol_ns)}/#{ns("schema", namespace)}") do
+      nil ->
+        []
+
+      _ ->
+        xpath(
+          wsdl,
+          ~x"//#{ns("types", protocol_ns)}/#{ns("schema", namespace)}/#{ns("element", namespace)}"l,
+          name: ~x"./@name"s,
+          type: ~x"./@type"s
+        )
+    end
   end
 
   @spec get_validation_types(String.t(), String.t(), String.t()) :: map()
@@ -162,12 +168,18 @@ defmodule Soap.Wsdl do
 
   @spec get_schema_attributes(String.t(), String.t()) :: map()
   defp get_schema_attributes(wsdl, protocol_ns) do
-    wsdl
-    |> xpath(
-      ~x"//#{ns("types", protocol_ns)}/*[local-name() = 'schema']",
-      target_namespace: ~x"./@targetNamespace"s,
-      element_form_default: ~x"./@elementFormDefault"s
-    )
+    case xpath(wsdl, ~x"//#{ns("types", protocol_ns)}/*[local-name() = 'schema']") do
+      nil ->
+        []
+
+      _ ->
+        xpath(
+          wsdl,
+          ~x"//#{ns("types", protocol_ns)}/*[local-name() = 'schema']",
+          target_namespace: ~x"./@targetNamespace"s,
+          element_form_default: ~x"./@elementFormDefault"s
+        )
+    end
   end
 
   @spec process_operations_extractor_result(list(), String.t()) :: list()
